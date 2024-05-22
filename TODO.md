@@ -6,6 +6,7 @@
 
 - use camel case
 - for foreing key, use "fk_" before the name of column, like "fk_userId".
+- use LF(never CRLF) as default.
 
 Prisma Usage
 
