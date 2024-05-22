@@ -1,0 +1,20 @@
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+COPY package.json yarn.lock ./
+
+COPY . .
+
+RUN yarn set version latest
+
+RUN yarn global add tsx tsup typescript
+
+RUN yarn install --frozen-lockfile --production=false \
+  && yarn cache clean --force
+
+ENV DB_HOST=localhost
+
+EXPOSE 3000
+
+CMD ["yarn", "start:dev"]
