@@ -1,0 +1,250 @@
+import {User} from "users"
+
+model Organization {
+  organizationId Int         @id @default(autoincrement()) @map("organization_id")
+  order          Int
+  title          String
+  description    String
+  label          Json        @db.Json
+  plan           String
+  concluded      Boolean
+  people         Role[]
+  team           Json        @db.Json
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime    @default(now()) @map("updated_at") @db.Timestamp(6)
+  workSpace      WorkSpace[]
+
+  @@map("organizations")
+}
+
+model Role {
+  roleId       Int          @id @default(autoincrement()) @map("role_id")
+  user         Int
+  employer     Int
+  type         RoleType
+  team         String
+  active       Boolean
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime     @default(now()) @map("updated_at") @db.Timestamp(6)
+  User         User         @relation(fields: [user], references: [userId])
+  Organization Organization @relation(fields: [employer], references: [organizationId])
+
+  @@map("roles")
+}
+
+model WorkSpace {
+  workSpaceId     Int               @id @default(autoincrement()) @map("workspace_id")
+  order           Int
+  title           String
+  description     String
+  active          Boolean
+  configWorkSpace ConfigWorkSpace[]
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime          @default(now()) @map("updated_at") @db.Timestamp(6)
+  Organization    Organization?     @relation(fields: [organization], references: [organizationId])
+  organization    Int?
+  folder          Folder[]
+
+  @@map("workspace")
+}
+
+model WhiteBoard {
+  whiteBoardId Int      @id @default(autoincrement()) @map("whiteboard_id")
+  sequence     Int
+  description  String
+  concluded    Boolean
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@map("WhiteBoard")
+}
+
+model Task {
+  taskId      Int         @id @default(autoincrement()) @map("task_id")
+  order       Int
+  taskCode    String      @map("task_code")
+  title       String
+  description String
+  reminder    DateTime
+  priority    Int
+  tag         Tag[]
+  checkList   Int?        @map("checklist")
+  detailTask  DetailTask? @relation("detailTask")
+  CheckList   CheckList?  @relation(fields: [checkList], references: [checkListId])
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime    @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@map("tasks")
+}
+
+model DetailTask {
+  detailTaskId Int      @id @unique @map("detailtask_id")
+  percentage   Float
+  task         Task?    @relation("detailTask", fields: [detailTaskId], references: [taskId])
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@map("detailtasks")
+}
+
+model TaskStatus {
+  taskStatusId    Int               @id @default(autoincrement()) @map("taskstatus_id")
+  description     String
+  color           String
+  situation       Situation         @default(ACTIVE)
+  concluded       Boolean
+  createdAt       DateTime          @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime          @default(now()) @map("updated_at") @db.Timestamp(6)
+  ConfigWorkSpace ConfigWorkSpace[]
+
+  @@map("taskstatus")
+}
+
+model ConfigWorkSpace {
+  configWorkSpaceId Int        @id @default(autoincrement()) @map("configworkspace_id")
+  avatar            String
+  privateLink       String
+  privacy           Privacy
+  status            Int
+  features          Features[]
+  view              View[]
+  workSpace         Int
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt         DateTime   @default(now()) @map("updated_at") @db.Timestamp(6)
+  WorkSpace         WorkSpace  @relation(fields: [workSpace], references: [workSpaceId])
+  TaskStatus        TaskStatus @relation(fields: [status], references: [taskStatusId])
+
+  @@map("configworkspace")
+}
+
+model CheckList {
+  checkListId Int      @id @default(autoincrement()) @map("checklist_id")
+  sequence    Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  Task        Task[]
+
+  @@map("checklists")
+}
+
+model Folder {
+  folderId    Int        @id @default(autoincrement()) @map("folder_id")
+  order       Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime   @default(now()) @map("updated_at") @db.Timestamp(6)
+  WorkSpace   WorkSpace? @relation(fields: [workSpace], references: [workSpaceId])
+  workSpace   Int?
+  Folder      Folder?    @relation("ChildToParent", fields: [parentId], references: [folderId])
+  parentId    Int?
+  children    Folder[]   @relation("ChildToParent")
+
+  @@map("folders")
+}
+
+model Document {
+  documentId  Int      @id @default(autoincrement()) @map("document_id")
+  sequence    Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@map("document")
+}
+
+model Tag {
+  tagId     Int      @id @default(autoincrement()) @map("tag_id")
+  title     String   @db.VarChar(255)
+  color     String
+  itemid    Int?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  Item      Item?    @relation(fields: [itemid], references: [itemId], onDelete: NoAction, onUpdate: NoAction)
+  Task      Task?    @relation(fields: [taskId], references: [taskId])
+  taskId    Int?
+
+  @@map("tags")
+}
+
+model Mensuration {
+  mensurationId Int      @id @default(autoincrement()) @map("mensuration_id")
+  item          Int?
+  thisvalue     Float
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  Item          Item?    @relation(fields: [item], references: [itemId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("mensurations")
+}
+
+model Item {
+  itemId      Int           @id @default(autoincrement()) @map("item_id")
+  title       String
+  description String
+  tag         Tag[]
+  range_min   Float
+  range_max   Float
+  target      Float
+  Mensuration Mensuration[]
+  User        User          @relation(fields: [fk_userId], references: [userId], onDelete: NoAction, onUpdate: NoAction)
+  fk_userId   Int
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime      @default(now()) @map("updated_at") @db.Timestamp(6)
+
+  @@map("items")
+}
+
+enum View {
+  LIST
+  BOARD
+  CALENDARY
+  MAP
+  TEAM
+  ACTIVITY
+  GANTT
+  MIND_MAP
+  TABLE
+  TIMELINE
+  WORK_LOAD
+}
+
+enum Features {
+  PRIORITY
+  SPRINTS
+  EMAIL
+  TAGS
+  CUSTOM_FIELDS
+  MULTIPLE_RESPONSABILITIES
+  TIME_TRACKING
+  TIME_ESTIMATES
+  REMAP_DEADLINES
+  LIMIT_JOBS_IN_PROGRESS
+  RATING
+  BLOCK_INCOMPLETE
+  NOTICE_DEPENDENCY
+  RE_SCHEDULE_DEPENDENCY
+  SHOW_PROGRESS
+}
+
+enum Privacy {
+  PRIVATE
+  PUBLIC
+  CUSTOM
+  RESTRICT
+}
+
+enum RoleType {
+  OWNER
+  ADMINISTRATOR
+  GUEST
+  EXTERNAL
+}
+
+enum Situation {
+  ACTIVE
+  INACTIVE
+}

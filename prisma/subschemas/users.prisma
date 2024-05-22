@@ -1,0 +1,91 @@
+import {Role, Item} from "core"
+
+model Profile {
+  profileId          Int       @id
+  photo              Bytes?
+  biography          String?
+  tittle             String?   @db.VarChar(255)
+  description        String?
+  birth              DateTime? @db.Timestamp(6)
+  phone              String?   @db.VarChar(255)
+  profileDescription String?   @map("profile_description")
+  profileStatus      String?   @map("profile_status")
+  interests          Json?
+  preferences        Json?
+  configurations     Json?
+  gender             Gender?
+  language           Language?
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt          DateTime  @default(now()) @map("updated_at") @db.Timestamp(6)
+  users              User      @relation(fields: [profileId], references: [userId], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("profiles")
+}
+
+model User {
+  userId    Int      @id @default(autoincrement()) @map("user_id")
+  userName  String   @unique @map("user_name") @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  firstName String?  @map("first_name") @db.VarChar(255)
+  lastName  String?  @map("last_name") @db.VarChar(255)
+  country   Country?
+  userType  UserType @default(PUBLIC) @map("user_type")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamp(6)
+  profiles  Profile?
+  Role      Role[]
+  Item      Item[]
+
+  @@map("users")
+}
+
+enum Country {
+  BRAZIL
+  UNITED_STATES
+  GERMANY
+  CHINA
+  SPAIN
+  PORTUGAL
+  JAPAN
+  RUSSIA
+  INDIA
+  CANADA
+  AUSTRALIA
+  UNITED_KINGDOM
+  ARGENTINA
+  COLOMBIA
+  PERU
+  CHILE
+  VENEZUELA
+  ECUADOR
+  BOLIVIA
+  PARAGUAY
+  URUGUAY
+  EL_SALVADOR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Language {
+  EN_US
+  PT_BR
+  PT_PT
+  ZH_CN
+  ES
+}
+
+enum UserType {
+  ERP
+  PUBLIC
+  API
+  SYSTEM
+  ANONYMOUS
+  ROOT
+  ADMIN
+}

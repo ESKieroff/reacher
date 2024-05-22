@@ -1,0 +1,336 @@
+//🧩Don't Edit this file.✨Generated in Mon May 13 2024 04:23:42 GMT-0300 (GMT-03:00)✨
+
+model Organization {
+  id          Int         @id @default(autoincrement())
+  order       Int
+  title       String
+  description String
+  label       Json        @db.Json
+  plan        String
+  concluded   Boolean
+  people      Role[]
+  team        Json        @db.Json
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  workSpace   WorkSpace[]
+
+  @@map("organizations")
+}
+
+model Role {
+  id           Int          @id @default(autoincrement())
+  thisuser     Int
+  employer     Int
+  type         RoleType
+  team         String
+  active       Boolean
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  User         User         @relation(fields: [thisuser], references: [id])
+  Organization Organization @relation(fields: [employer], references: [id])
+
+  @@map("roles")
+}
+
+model WorkSpace {
+  id              Int               @id @default(autoincrement())
+  order           Int
+  title           String
+  description     String
+  active          Boolean
+  configWorkSpace ConfigWorkSpace[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  Organization    Organization?     @relation(fields: [organization], references: [id])
+  organization    Int?
+  folder          Folder[]
+
+  @@map("workspace")
+}
+
+model WhiteBoard {
+  id          Int      @id @default(autoincrement())
+  sequence    Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("WhiteBoard")
+}
+
+model Task {
+  id          Int         @id @default(autoincrement())
+  order       Int
+  taskCode    String
+  title       String
+  description String
+  reminder    DateTime
+  priority    Int
+  tag         Tag[]
+  checkList   Int?
+  detailTask  DetailTask? @relation("detailTask")
+  CheckList   CheckList?  @relation(fields: [checkList], references: [id])
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("tasks")
+}
+
+model DetailTask {
+  id         Int      @id @unique
+  percentual Float
+  task       Task?    @relation("detailTask", fields: [id], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("detailtasks")
+}
+
+model TaskStatus {
+  id              Int               @id @default(autoincrement())
+  description     String
+  color           String
+  situation       Situation         @default(ACTIVE)
+  concluded       Boolean
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  ConfigWorkSpace ConfigWorkSpace[]
+
+  @@map("taskstatus")
+}
+
+model ConfigWorkSpace {
+  id          Int        @id @default(autoincrement())
+  avatar      String
+  privateLink String
+  privacy     Privacy
+  status      Int
+  features    Features[]
+  view        View[]
+  workSpace   Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  WorkSpace   WorkSpace  @relation(fields: [workSpace], references: [id])
+  TaskStatus  TaskStatus @relation(fields: [status], references: [id])
+
+  @@map("configworkspace")
+}
+
+model CheckList {
+  id          Int      @id @default(autoincrement())
+  sequence    Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Task        Task[]
+
+  @@map("checklists")
+}
+
+model Folder {
+  id          Int        @id @default(autoincrement())
+  order       Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  WorkSpace   WorkSpace? @relation(fields: [workSpace], references: [id])
+  workSpace   Int?
+  Folder      Folder?    @relation("ChildToParent", fields: [parentId], references: [id])
+  parentId    Int?
+  children    Folder[]   @relation("ChildToParent")
+
+  @@map("folders")
+}
+
+model Document {
+  id          Int      @id @default(autoincrement())
+  sequence    Int
+  description String
+  concluded   Boolean
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("document")
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  color     String
+  itemid    Int?
+  createdat DateTime @default(now()) @db.Timestamp(6)
+  updatedat DateTime @default(now()) @db.Timestamp(6)
+  Item      Item?    @relation(fields: [itemid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Task      Task?    @relation(fields: [taskId], references: [id])
+  taskId    Int?
+
+  @@map("tags")
+}
+
+model Mensuration {
+  id        Int      @id @default(autoincrement())
+  fk_id     Int?
+  thisvalue Float
+  createdat DateTime @default(now()) @db.Timestamp(6)
+  updatedat DateTime @default(now()) @db.Timestamp(6)
+  Item      Item?    @relation(fields: [fk_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("mensurations")
+}
+
+model Item {
+  id          Int           @id @default(autoincrement())
+  title       String
+  description String
+  tag         Tag[]
+  range_min   Float
+  range_max   Float
+  target      Float
+  Mensuration Mensuration[]
+  User        User          @relation(fields: [fk_userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fk_userId   Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("items")
+}
+
+enum View {
+  LIST
+  BOARD
+  CALENDARY
+  MAP
+  TEAM
+  ACTIVITY
+  GANTT
+  MIND_MAP
+  TABLE
+  TIMELINE
+  WORK_LOAD
+}
+
+enum Features {
+  PRIORITY
+  SPRINTS
+  EMAIL
+  TAGS
+  CUSTOM_FIELDS
+  MULTIPLE_RESPONSABILITIES
+  TIME_TRACKING
+  TIME_ESTIMATES
+  REMAP_DEADLINES
+  LIMIT_JOBS_IN_PROGRESS
+  RATING
+  BLOCK_INCOMPLETE
+  NOTICE_DEPENDENCY
+  RE_SCHEDULE_DEPENDENCY
+  SHOW_PROGRESS
+}
+
+enum Privacy {
+  PRIVATE
+  PUBLIC
+  CUSTOM
+  RESTRICT
+}
+
+enum RoleType {
+  OWNER
+  ADMINISTRATOR
+  GUEST
+  EXTERNAL
+}
+
+enum Situation {
+  ACTIVE
+  INACTIVE
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multischema"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+model Profile {
+  id                  Int       @id
+  photo               Bytes?
+  biography           String?
+  tittle              String?   @db.VarChar(255)
+  description         String?
+  birth               DateTime? @db.Timestamp(6)
+  phone               String?   @db.VarChar(255)
+  profile_description String?
+  profile_status      String?
+  interests           Json?
+  preferences         Json?
+  configurations      Json?
+  gender              Gender?
+  language            Language?
+  created_at          DateTime  @default(now()) @db.Timestamp(6)
+  updated_at          DateTime  @default(now()) @db.Timestamp(6)
+  users               User      @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("profiles")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  username   String   @unique @db.VarChar(255)
+  email      String   @unique @db.VarChar(255)
+  password   String   @db.VarChar(255)
+  first_name String?  @db.VarChar(255)
+  last_name  String?  @db.VarChar(255)
+  country    Country?
+  user_type  UserType @default(PUBLIC)
+  active     Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  profiles   Profile?
+  Role       Role[]
+  Item       Item[]
+
+  @@map("users")
+}
+
+enum Country {
+  BRAZIL
+  UNITED_STATES
+  GERMANY
+  CHINA
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Language {
+  EN_US
+  PT_BR
+  PT_PT
+  ZH_CN
+  ES
+}
+
+enum UserType {
+  ERP
+  PUBLIC
+  API
+  SYSTEM
+  ANONYMOUS
+  ROOT
+  ADMIN
+}
